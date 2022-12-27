@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @CrossOrigin
 @RestController
 @RequestMapping("/emp/")
@@ -18,18 +21,21 @@ public class EmployeeController {
 
 
     @PostMapping("save")
-    public ResponseEntity<String > save(@RequestBody Employee employee) {
+    public Map<String,String> save(@RequestBody Employee employee) {
 
         String res = "";
         Employee emp = employeeService.findEmployee(employee.getEmail());
+        Map<String,String> result = new HashMap<String,String>();
         if (emp != null) {
+            result.put("message", "Email is already added.");
+
             res = "Email is already added.";
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("error");
         } else {
+
+            result.put("message", "Unauthorized...");
             employeeService.saveEmployee(employee);
-            return ResponseEntity.ok("ok");
-//            res = "Employee registered successfully";
         }
+        return result;
     }
 
     @PostMapping("login")
