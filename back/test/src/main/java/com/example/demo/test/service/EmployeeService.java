@@ -3,7 +3,7 @@ package com.example.demo.test.service;
 
 import com.example.demo.test.entity.Employee;
 
-import java.util.List;
+import java.util.Map;
 
 public interface EmployeeService {
 
@@ -11,5 +11,5 @@ public interface EmployeeService {
 
     Employee findEmployee(String email);
 
-    String  checkAuth(Employee employee);
+    Map<String,String> checkAuth(Employee employee);
 }

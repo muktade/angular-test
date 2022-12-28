@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {Employee} from "../../service/Employee";
-import {HttpClient} from "@angular/common/http";
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {FormBuilder, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {ApiService} from "../../service/api.service";
+import {CommonConstants} from "../../service/CommonConstants";
 
 @Component({
   selector: 'app-login',
@@ -12,25 +12,43 @@ import {ApiService} from "../../service/api.service";
 })
 export class LoginComponent {
 
-  employee?:Employee;
-
-  constructor(private api: ApiService, private router: Router, private fb:FormBuilder) {
+  employee?: Employee;
+  loginForm : any = FormBuilder;
+  constructor(private api: ApiService, private router: Router, private fb: FormBuilder) {
     this.loginForm.value;
+    const email = localStorage.getItem('email');
+    if (email != null) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
-  loginForm:FormGroup = this.fb.group({
-    email : [''],
-    password: ['']
-  });
 
-  login(){
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.pattern(CommonConstants.emailRegex)],],
+      password: ['', [Validators.required],]
+    });
+  }
+
+
+  login() {
     const formValue = this.loginForm.value;
     this.employee = formValue;
-    console.log(this.employee);
-    this.api.postRequest('login', this.employee).subscribe((res)=>{
-      alert("login success");
-      // localStorage.setItem('email', this.employee?.email);
-      this.router.navigate(['/dashboard']);
+    this.api.postRequest('login', this.employee).subscribe((res: any) => {
+      const msg = res.message;
+      if (msg.match('email is not found')) {
+        alert(msg);
+      } else if (msg.match("Password is match")) {
+        alert("login success");
+        localStorage.setItem('email', JSON.stringify(this.employee?.email));
+        this.router.navigate(['/dashboard']);
+      } else if (msg.match('Password is not match')) {
+        alert(msg);
+      } else if (msg.match("something is not ok")) {
+        alert(msg);
+      } else {
+        alert("Sorry we can't Log In");
+      }
     });
   }
 

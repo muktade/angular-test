@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ApiService} from "../../service/api.service";
 import {Router} from "@angular/router";
 import {Employee} from "../../service/Employee";
+import {CommonConstants} from '../../service/CommonConstants';
 
 @Component({
   selector: 'app-registration',
@@ -11,34 +12,53 @@ import {Employee} from "../../service/Employee";
 })
 export class RegistrationComponent {
 
+registrationForm:any = FormBuilder;
+
   employee?: Employee;
   constructor(private api: ApiService, private router: Router, private fb : FormBuilder) {
-    this.registrationForm;
+    const email = localStorage.getItem('email');
+    if(email != null){
+      this.router.navigate(['/dashboard']);
+    }
   }
 
-  registrationForm:FormGroup = this.fb.group({
-    firstName : [''],
-    lastName : [''],
-    email : [''],
-    password : ['']
-  });
 
-  ngOnInit(): void{}
+
+  ngOnInit(): void{
+    this.registrationForm= this.fb.group({
+      firstName : ['', [Validators.required,Validators.pattern(CommonConstants.nameRegex)],],
+      lastName : ['', [Validators.required, Validators.pattern(CommonConstants.nameRegex)],],
+      email : ['', [Validators.required, Validators.pattern(CommonConstants.emailRegex)],],
+      password : ['', [Validators.required, Validators.pattern(CommonConstants.passwordRegex)],],
+      conPass:['', [Validators.required],]
+    });
+  }
 
   signUp(){
     const formValue = this.registrationForm.value;
     this.employee = formValue;
     console.log(this.employee);
 
-    this.api.postRequest('save', this.employee).subscribe(response =>{
-      console.log(response+"ami assi");
-      this.registrationForm.reset();
-      alert("Employee register successful");
-      this.router.navigateByUrl('/login');
-    },error => {
-      console.log(error);
-      alert("Sorry somethings went wrong!!!")
-    });
+    if(this.employee?.password===formValue.conPass){
+
+      this.api.postRequest('save', this.employee).subscribe((response :any) =>{
+        console.log(response);
+        this.registrationForm.reset();
+        const msg= response.message;
+        if(msg.match('Email is already added.')){
+          alert(msg);
+        }else if(msg.match('Employee created successfully.')){
+          alert(msg);
+          this.router.navigate(['/login']);
+        }else{
+          alert("Sorry we can't Log In");
+        }
+
+      });
+
+    }else {
+      alert("Password not match...")
+    }
   }
 
 }

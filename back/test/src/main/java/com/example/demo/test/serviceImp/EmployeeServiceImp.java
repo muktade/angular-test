@@ -5,9 +5,11 @@ import com.example.demo.test.repository.EmployeeRepository;
 import com.example.demo.test.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
@@ -34,8 +36,8 @@ public class EmployeeServiceImp implements EmployeeService {
     }
 
     @Override
-    public String checkAuth(Employee employee) {
-
+    public Map<String,String> checkAuth(Employee employee) {
+        Map<String,String> result = new HashMap<String,String>();
         String res = "";
         Employee emp = employeeRepository.findEmployeeByEmail(employee.getEmail());
         if (emp != null) {
@@ -49,7 +51,8 @@ public class EmployeeServiceImp implements EmployeeService {
         } else {
             res = "email is not found";
         }
-        return res;
+        result.put("message", res);
+        return result;
 
     }
 }
